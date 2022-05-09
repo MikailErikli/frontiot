@@ -15,9 +15,11 @@ import "primevue/resources/themes/bootstrap4-light-blue/theme.css";
 import "primeicons/primeicons.css";
 import Slider from "primevue/slider";
 import InputSwitch from "primevue/inputswitch";
+import InputText from "primevue/inputtext";
+import ColorPicker from "primevue/colorpicker";
 
 window.api = axios.create({
-  baseURL: "http://localhost:8000/api/",
+  baseURL: "http://192.168.54.220:3000/",
 });
 
 const emitter = mitt();
@@ -28,9 +30,9 @@ app.config.globalProperties.emitter = emitter;
 app.use(store);
 app.use(router);
 app.use(PrimeVue);
-app.component("choiceColor", choiceColor);
-app.component("circularNav", circularNav);
 app.component("MyDropdown", Dropdown);
 app.component("MySlider", Slider);
 app.component("InputSwitch", InputSwitch);
+app.component("InputText", InputText);
+app.component("ColorPicker", ColorPicker);
 app.mount("#app");

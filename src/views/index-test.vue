@@ -1,90 +1,114 @@
 <template>
-  <h1>Choisissez votre couleur</h1>
+  <h1 @click="getObjetById(1)">
+    Choisissez votre couleur pour {{ objet.libelle }}
+  </h1>
   <div id="conteneur" class="mt-5">
     <div>
       <MyDropdown
-        v-model="selectedCity"
+        v-model="objet.mode"
         class="mt-5"
-        :options="cities"
-        optionLabel="name"
+        :options="modes"
+        dataKey="id_mode"
+        optionLabel="libelle"
         placeholder="Selectionner le mode"
+        @change="onChangeMode()"
       />
     </div>
 
     <div id="picker">
-      <color-picker
-        id="colorPicker"
-        class="mt-5"
-        v-bind="color"
-        @input="onInput"
-        :aria-valuetext="valuetext"
+      <ColorPicker
+        v-model="objet.rgb"
+        @change="onChangeMode()"
+        :inline="true"
       />
     </div>
 
-    <h5>Luminosité: {{ value6 }}</h5>
-    <MySlider v-model="value6" class="mt-5" orientation="vertical" />
+    <h5>Luminosité: {{ objet.seuil_luminosite }}</h5>
+    <MySlider
+      v-model="objet.seuil_luminosite"
+      class="mt-5"
+      orientation="vertical"
+      :step="20"
+      :min="0"
+      :max="4000"
+      @change="onChangeMode()"
+    />
   </div>
   <div>
-    <p class="mt-5">Allumer/Eteindre</p>
-    <InputSwitch v-model="checked1" />
+    <InputText
+      id="délaiMouv"
+      type="text"
+      v-model="objet.delai_mouvement"
+      placeholder="délai de mouvement"
+      @change="onChangeMode()"
+    />
   </div>
 </template>
 
 <script>
-import ColorPicker from "@radial-color-picker/vue-color-picker";
-import { reactive, computed } from "vue";
-
-const colors = [
-  "#ff0000",
-  "#ffff00",
-  "#008000",
-  "#00FFFF",
-  "#0000FF",
-  "#FF00FF",
-  "#FF0000",
-];
+import { computed } from "vue";
+import { mapActions } from "vuex";
 
 export default {
-  components: { ColorPicker },
   data() {
-    const color = reactive({
-      hue: 141,
-      saturation: 60,
-      luminosity: 75,
-    });
-
-    const valuetext = computed(() => {
-      // Note: you don't have to cut corners.
-      // Use regular switch/if-else if it makes more sense
-      const index = Math.round(color.hue / 60);
-      const value = colors[index];
-      console.log(value);
-
-      return `light ${value}`;
-    });
     return {
-      checked1: false,
       value6: 50,
-      selectedCity: null,
-      color,
-      valuetext,
-      cities: [
-        { name: "Automatique", code: "NY" },
-        { name: "Manuel", code: "RM" },
-      ],
+      selectedMode: null,
+      objetid: 1,
+      objet: {},
+      form: {
+        libelle: "",
+        rgb: "",
+        seuil_luminosite: 0,
+        delai_mouvement: 0,
+        mode: { id_mode: 0 },
+      },
     };
   },
+
+  mounted() {
+    this.getModes();
+    this.getObjetById(1);
+  },
+
   methods: {
-    onInput(hue) {
-      this.color.hue = hue;
+    ...mapActions(["getModes"]),
+
+    async getObjetById(objetid) {
+      window.api
+        .get(`objet/` + objetid)
+        .then((result) => {
+          this.objet = result.data[0];
+          console.log("toto", result.data[0], this.objet);
+        })
+        .catch((error) => {
+          // handle authentication and validation errors here
+          console.log("ERRR::", error);
+        });
+    },
+    onChangeMode() {
+      window.api
+        .post("/objet/1", this.objet)
+        .then((response) => {
+          this.$emit("completed", response.data);
+        })
+        .catch((error) => {
+          // handle authentication and validation errors here
+          console.log("ERRR::", error.response.data);
+        });
+    },
+  },
+
+  computed: {
+    modes() {
+      console.log("computed", this.$store.state.mode);
+      return this.$store.state.mode;
     },
   },
 };
 </script>
 
 <style scoped>
-@import "~@radial-color-picker/vue-color-picker/dist/vue-color-picker.min.css";
-
 #picker {
   padding: 5%;
   display: flex;

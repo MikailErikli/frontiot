@@ -7,6 +7,12 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/index-test.vue"),
   },
+  {
+    path: "/connexion",
+    name: "connexion",
+    component: () =>
+      import(/* webpackChunkName: "about" */ "../views/connexion.vue"),
+  },
 ];
 
 const router = createRouter({
