@@ -1,9 +1,8 @@
 <template>
-  <h1 @click="getObjetById(1)">
-    Choisissez votre couleur pour {{ objet.libelle }}
-  </h1>
+  <h1>Choisissez votre couleur pour {{ objet.libelle }}</h1>
   <div id="conteneur" class="mt-5">
     <div>
+      <h5>Etat: {{ etatled }}</h5>
       <MyDropdown
         v-model="objet.mode"
         class="mt-5"
@@ -17,6 +16,7 @@
 
     <div id="picker">
       <ColorPicker
+        class="ms-5"
         v-model="objet.rgb"
         @change="onChangeMode()"
         :inline="true"
@@ -24,6 +24,7 @@
     </div>
 
     <h5>Luminosité: {{ objet.seuil_luminosite }}</h5>
+
     <MySlider
       v-model="objet.seuil_luminosite"
       class="mt-5"
@@ -35,6 +36,8 @@
     />
   </div>
   <div>
+    <label for="délaiMouv">délaie de mouvement :</label>
+    <br />
     <InputText
       id="délaiMouv"
       type="text"
@@ -56,27 +59,24 @@ export default {
       selectedMode: null,
       objetid: 1,
       objet: {},
-      form: {
-        libelle: "",
-        rgb: "",
-        seuil_luminosite: 0,
-        delai_mouvement: 0,
-        mode: { id_mode: 0 },
-      },
+      etat: "",
+      etatled: "",
+      timeout: null,
     };
   },
 
   mounted() {
     this.getModes();
-    this.getObjetById(1);
+    this.getObjetById();
+    this.myFunction();
   },
 
   methods: {
     ...mapActions(["getModes"]),
 
-    async getObjetById(objetid) {
+    async getObjetById() {
       window.api
-        .get(`objet/` + objetid)
+        .get(`objet/${this.$route.params.ObjetId}`)
         .then((result) => {
           this.objet = result.data[0];
           console.log("toto", result.data[0], this.objet);
@@ -86,9 +86,39 @@ export default {
           console.log("ERRR::", error);
         });
     },
+
+    myFunction() {
+      this.timeout = setInterval(this.etatLed, 1000);
+    },
+
+    alertFunc() {
+      console.log("Hello!");
+    },
+
+    etatLed() {
+      if (this.$route.params.ObjetId) {
+        window.api
+          .get(`objet/${this.$route.params.ObjetId}`)
+          .then((result) => {
+            this.etat = result.data[0].etat_led;
+            console.log("toto", this.etat);
+          })
+          .catch((error) => {
+            // handle authentication and validation errors here
+            console.log("ERRR::", error);
+          });
+
+        if (this.etat == 1) {
+          this.etatled = "Allumé";
+        } else if (this.etat == 0) {
+          this.etatled = "Eteint";
+        }
+      }
+    },
+
     onChangeMode() {
       window.api
-        .post("/objet/1", this.objet)
+        .post(`objet/${this.$route.params.ObjetId}`, this.objet)
         .then((response) => {
           this.$emit("completed", response.data);
         })

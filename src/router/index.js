@@ -2,13 +2,13 @@ import { createRouter, createWebHashHistory } from "vue-router";
 
 const routes = [
   {
-    path: "/",
-    name: "index",
+    path: "/objet/:ObjetId",
+    name: "objet",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/index-test.vue"),
+      import(/* webpackChunkName: "about" */ "../views/page-objet.vue"),
   },
   {
-    path: "/connexion",
+    path: "/",
     name: "connexion",
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/connexion.vue"),
